@@ -5,41 +5,55 @@ struct ContentView: View {
     @State private var users: GithubUsers?
     
     var body: some View {
-        VStack {
-            if let avatarUrl = users?.avatarUrl, let url = URL(string: avatarUrl) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .clipShape(Circle())
-                    case .failure(_):
-                        Image(systemName: "exclamationmark.triangle")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .clipShape(Circle())
-                    @unknown default:
-                        EmptyView()
+        ZStack {
+            // Background Gradient
+            RadialGradient(colors: [
+                Color(#colorLiteral(red: 0.678, green: 0.847, blue: 0.902, alpha: 1)), // Light Blue
+                Color(#colorLiteral(red: 0.529, green: 0.808, blue: 0.922, alpha: 1)), // Medium Light Blue
+                Color(#colorLiteral(red: 0.529, green: 0.807, blue: 0.98, alpha: 1))  // Sky Blue
+            ],
+            center: .center,
+            startRadius: 5,
+            endRadius: 500)
+            .edgesIgnoringSafeArea(.all)
+            
+            // Content
+            VStack {
+                if let avatarUrl = users?.avatarUrl, let url = URL(string: avatarUrl) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .clipShape(Circle())
+                        case .failure(_):
+                            Image(systemName: "exclamationmark.triangle")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .clipShape(Circle())
+                        @unknown default:
+                            EmptyView()
+                        }
                     }
-                }
-                .frame(width: 150, height: 150)
-            } else {
-                Circle()
-                    .foregroundColor(.gray)
                     .frame(width: 150, height: 150)
+                } else {
+                    Circle()
+                        .foregroundColor(.gray)
+                        .frame(width: 150, height: 150)
+                }
+                
+                Text(users?.login ?? "Login Placeholder")
+                    .bold()
+                    .font(.title3)
+                
+                Text(users?.bio ?? "No bio available")
+                    .padding()
             }
-            
-            Text(users?.login ?? "Login Placeholder")
-                .bold()
-                .font(.title3)
-            
-            Text(users?.bio ?? "No bio available")
-                .padding()
+            .padding()
         }
-        .padding()
         .task {
             do {
                 users = try await getUser()
